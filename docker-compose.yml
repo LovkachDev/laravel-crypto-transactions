@@ -1,0 +1,44 @@
+version: '3'
+
+services:
+    nginx:
+        image: nginx:latest
+        volumes:
+            - ./:/var/www
+            - ./docker/nginx/conf.d:/etc/nginx/conf.d
+        ports:
+            - "8888:80"
+        depends_on:
+            - app
+        container_name: project_nginx
+
+    app:
+        build:
+            context: .
+            dockerfile: docker/app/Dockerfile
+        volumes:
+            - ./:/var/www
+        depends_on:
+            - db
+        container_name: project_app
+    db:
+        image: mysql:8.0
+        restart: always
+        volumes:
+            - ./tmp/db:/var/lib/mysql
+        environment:
+            - MYSQL_DATABASE=laravel-crypto-panel
+            - MYSQL_ROOT_PASSWORD=user
+        ports:
+            - '8101:3306'
+        container_name: project_db
+    phpmyadmin:
+        image: phpmyadmin
+        restart: always
+        ports:
+            - '8080:80'
+        depends_on:
+            - db
+        environment:
+            - PMA_ARBITRARY=1
+        container_name: project_phpmyadmin
